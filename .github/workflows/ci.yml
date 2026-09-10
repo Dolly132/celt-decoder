@@ -7,46 +7,35 @@ on:
     branches: [ "main", "master" ]
 
 jobs:
-  build-all:
-    runs-on: ubuntu-latest
-
+  build-windows:
+    runs-on: windows-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Install Toolchains & Multilib Compilers
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          gcc gcc-multilib \
-          gcc-mingw-w64-i686 gcc-mingw-w64-x86-64 \
-          make
+      - name: Set up Developer Command Prompt
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x86
 
-    - name: Build Windows 32-bit (celt32.lib)
-      run: |
-        make OS=windows ARCH=x86
-        make clean
+      - name: Build CELT x86 (MSVC)
+        run: |
+          cl.exe /c /O2 /MD /DHAVE_CONFIG_H /Iinclude /Isrc src/*.c
+          lib.exe /OUT:celt32.lib *.obj
 
-    - name: Build Windows 64-bit (celt64.lib)
-      run: |
-        make OS=windows ARCH=x64
-        make clean
+      - name: Set up Developer Command Prompt (x64)
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
 
-    - name: Build Linux 32-bit (libcelt32.a)
-      run: |
-        make OS=linux ARCH=x86
-        make clean
+      - name: Build CELT x64 (MSVC)
+        run: |
+          cl.exe /c /O2 /MD /DHAVE_CONFIG_H /Iinclude /Isrc src/*.c
+          lib.exe /OUT:celt64.lib *.obj
 
-    - name: Build Linux 64-bit (libcelt64.a)
-      run: |
-        make OS=linux ARCH=x64
-
-    - name: Upload All CELT Libraries
-      uses: actions/upload-artifact@v4
-      with:
-        name: celt-static-libraries
-        path: |
-          celt32.lib
-          celt64.lib
-          libcelt32.a
-          libcelt64.a
+      - name: Upload Windows Libraries
+        uses: actions/upload-artifact@v4
+        with:
+          name: celt-windows-libs
+          path: |
+            celt32.lib
+            celt64.lib
