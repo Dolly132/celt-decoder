@@ -1,37 +1,30 @@
-name: build-celt-windows
+name: Build 32-bit Windows Binary
 
 on:
-  workflow_dispatch:
   push:
-    paths:
-      - 'src/**'
-      - 'include/**'
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
 
 jobs:
-  build:
-    runs-on: windows-latest
+  build-win32:
+    runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Setup MSVC (x86)
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x86
+    - name: Install MinGW 32-bit Compiler
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-mingw-w64-i686 make
 
-      - name: Compile CELT sources
-        shell: cmd
-        run: |
-          mkdir obj
-          for %%f in (bands.c celt.c cwrs.c entcode.c entdec.c entenc.c header.c kiss_fft.c laplace.c mathops.c mdct.c modes.c pitch.c plc.c quant_bands.c rate.c static_modes_fixed.c static_modes_float.c vq.c) do (
-            cl /c /O2 /MT /DHAVE_CONFIG_H /Isrc /Iinclude /Fo:obj\%%~nf.obj src\%%f
-            if errorlevel 1 exit /b 1
-          )
+    - name: Build CELT for Win32
+      run: |
+        make CC=i686-w64-mingw32-gcc
 
-      - name: Archive into static lib
-        shell: cmd
-        run: lib /OUT:celt.lib obj\*.obj
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: celt-windows-x86
-          path: celt.lib
+    - name: Upload Windows Binary Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: celt-win32-binary
+        path: celt32.dll  # Change to celt32.exe if compiling an executable
