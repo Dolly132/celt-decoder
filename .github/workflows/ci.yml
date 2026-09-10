@@ -13,8 +13,6 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-      with:
-        submodules: recursive
 
     - name: Install MinGW 32-bit Compiler
       run: |
@@ -29,4 +27,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: celt-win32-binary
-        path: celt32.dll  # Change to celt32.exe if compiling an executable
+        path: celt32.dll
