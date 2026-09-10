@@ -19,8 +19,9 @@ jobs:
 
       - name: Build CELT x86 (MSVC)
         run: |
-          cl.exe /c /O2 /MD /DHAVE_CONFIG_H /Iinclude /Isrc src/*.c
+          cl.exe /c /O2 /MT /DHAVE_CONFIG_H /D_CRT_SECURE_NO_WARNINGS /D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE /Iinclude /Isrc src/*.c
           lib.exe /OUT:celt32.lib *.obj
+          del *.obj
 
       - name: Set up Developer Command Prompt (x64)
         uses: ilammy/msvc-dev-cmd@v1
@@ -29,8 +30,9 @@ jobs:
 
       - name: Build CELT x64 (MSVC)
         run: |
-          cl.exe /c /O2 /MD /DHAVE_CONFIG_H /Iinclude /Isrc src/*.c
+          cl.exe /c /O2 /MT /DHAVE_CONFIG_H /D_CRT_SECURE_NO_WARNINGS /D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE /Iinclude /Isrc src/*.c
           lib.exe /OUT:celt64.lib *.obj
+          del *.obj
 
       - name: Upload Windows Libraries
         uses: actions/upload-artifact@v4
