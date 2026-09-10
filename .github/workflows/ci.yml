@@ -1,4 +1,4 @@
-name: Build 32-bit Windows Binary
+name: Build 32-bit Windows Static Library
 
 on:
   push:
@@ -11,20 +11,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
+    - name: Checkout CELT repo
       uses: actions/checkout@v4
 
-    - name: Install MinGW 32-bit Compiler
+    - name: Install MinGW 32-bit Toolchain
       run: |
         sudo apt-get update
         sudo apt-get install -y gcc-mingw-w64-i686 make
 
-    - name: Build CELT for Win32
+    - name: Build static library
       run: |
-        make CC=i686-w64-mingw32-gcc
+        make
 
-    - name: Upload Windows Binary Artifact
+    - name: Upload celt32.lib Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: celt-win32-binary
-        path: celt32.dll
+        name: celt32-win32-lib
+        path: celt32.lib
