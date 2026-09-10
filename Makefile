@@ -51,4 +51,4 @@ $(TARGET): $(OBJS)
 	$(AR) rcs $@ $(OBJS)
 
 clean:
-	rm -f $(OBJS) celt32.lib celt64.lib libcelt32.a libcelt64.a
+	rm -f $(OBJS)
