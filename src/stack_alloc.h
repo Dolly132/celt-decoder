@@ -33,15 +33,21 @@
 #define STACK_ALLOC_H
 
 #ifdef USE_ALLOCA
-# ifdef WIN32
+
+# ifdef _MSC_VER
 #  include <malloc.h>
+#  define alloca _alloca
+
+# elif defined(WIN32)
+#  include <malloc.h>
+
+# elif defined(HAVE_ALLOCA_H)
+#  include <alloca.h>
+
 # else
-#  ifdef HAVE_ALLOCA_H
-#   include <alloca.h>
-#  else
-#   include <stdlib.h>
-#  endif
+#  include <stdlib.h>
 # endif
+
 #endif
 
 /**
