@@ -2,7 +2,6 @@
 OS ?= windows
 ARCH ?= x86
 
-# Source files
 SRCS = src/bands.c src/celt.c src/cwrs.c src/entcode.c \
        src/entdec.c src/entenc.c src/header.c src/kiss_fft.c \
        src/laplace.c src/mathops.c src/mdct.c src/modes.c \
@@ -11,7 +10,6 @@ SRCS = src/bands.c src/celt.c src/cwrs.c src/entcode.c \
 
 OBJS = $(SRCS:.c=.o)
 
-# Toolchain and Target setup based on OS & ARCH
 ifeq ($(OS), windows)
     ifeq ($(ARCH), x64)
         CC = x86_64-w64-mingw32-gcc
@@ -38,7 +36,9 @@ else ifeq ($(OS), linux)
     endif
 endif
 
+# -mno-stack-arg-probe disables MinGW's ___chkstk_ms calls for MSVC compatibility
 CFLAGS = $(CFLAGS_ARCH) -DHAVE_CONFIG_H -Iinclude -Isrc \
+         -mno-stack-arg-probe -fno-stack-protector \
          -Wno-parentheses -Wno-tautological-pointer-compare \
          -Wno-implicit-function-declaration -std=gnu89
 
