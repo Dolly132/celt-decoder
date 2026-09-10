@@ -1,4 +1,4 @@
-name: Build 32-bit Windows Static Library
+name: Build CELT Multi-Arch Static Libraries
 
 on:
   push:
@@ -7,24 +7,46 @@ on:
     branches: [ "main", "master" ]
 
 jobs:
-  build-win32:
+  build-all:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout CELT repo
+    - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Install MinGW 32-bit Toolchain
+    - name: Install Toolchains & Multilib Compilers
       run: |
         sudo apt-get update
-        sudo apt-get install -y gcc-mingw-w64-i686 make
+        sudo apt-get install -y \
+          gcc gcc-multilib \
+          gcc-mingw-w64-i686 gcc-mingw-w64-x86-64 \
+          make
 
-    - name: Build static library
+    - name: Build Windows 32-bit (celt32.lib)
       run: |
-        make
+        make OS=windows ARCH=x86
+        make clean
 
-    - name: Upload celt32.lib Artifact
+    - name: Build Windows 64-bit (celt64.lib)
+      run: |
+        make OS=windows ARCH=x64
+        make clean
+
+    - name: Build Linux 32-bit (libcelt32.a)
+      run: |
+        make OS=linux ARCH=x86
+        make clean
+
+    - name: Build Linux 64-bit (libcelt64.a)
+      run: |
+        make OS=linux ARCH=x64
+
+    - name: Upload All CELT Libraries
       uses: actions/upload-artifact@v4
       with:
-        name: celt32-win32-lib
-        path: celt32.lib
+        name: celt-static-libraries
+        path: |
+          celt32.lib
+          celt64.lib
+          libcelt32.a
+          libcelt64.a
