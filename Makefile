@@ -1,5 +1,6 @@
-# Default to MinGW 32-bit compiler if not set
-CC ?= i686-w64-mingw32-gcc
+# Default to 64-bit MinGW compiler (matches your MSVC x64 build)
+# Change to i686-w64-mingw32-gcc if you are building an x86/32-bit extension
+CC ?= x86_64-w64-mingw32-gcc
 
 # Source files inside src/
 CELT_SRCS = src/bands.c src/celt.c src/cwrs.c src/entcode.c \
@@ -11,18 +12,25 @@ CELT_SRCS = src/bands.c src/celt.c src/cwrs.c src/entcode.c \
 # Headers for change tracking
 CELT_HDRS = $(wildcard include/*.h) $(wildcard src/*.h)
 
-# Compiler flags for 32-bit Windows & legacy C support
-CFLAGS = -m32 -DHAVE_CONFIG_H -Iinclude -Isrc \
+# Compiler flags for Windows & legacy C support
+CFLAGS = -DHAVE_CONFIG_H -Iinclude -Isrc \
          -Wno-parentheses -Wno-tautological-pointer-compare \
          -Wno-implicit-function-declaration -std=gnu89
 
-# Output binary target
-celt32.dll: config.h $(CELT_SRCS) $(CELT_HDRS)
-	$(CC) $(CFLAGS) -shared $(CELT_SRCS) -o $@
+# Output targets: DLL + Import Library for MSVC
+TARGET_DLL = celt32.dll
+TARGET_LIB = libcelt32.lib
 
-# Generate a minimal config.h if none exists
+all: $(TARGET_DLL)
+
+$(TARGET_DLL): config.h $(CELT_SRCS) $(CELT_HDRS)
+	$(CC) $(CFLAGS) -shared $(CELT_SRCS) \
+		-Wl,--out-implib,$(TARGET_LIB) \
+		-o $@
+
+# Generate a minimal config.h if missing
 config.h:
-	@echo "Creating static config.h for Windows 32-bit..."
+	@echo "Creating static config.h for Windows..."
 	@echo "#ifndef CONFIG_H" > config.h
 	@echo "#define CONFIG_H" >> config.h
 	@echo "#define inline __inline" >> config.h
@@ -30,4 +38,4 @@ config.h:
 	@echo "#endif" >> config.h
 
 clean:
-	rm -f celt32.dll config.h
+	rm -f $(TARGET_DLL) $(TARGET_LIB) config.h
