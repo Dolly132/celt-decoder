@@ -23,7 +23,7 @@ jobs:
         run: |
           mkdir obj
           for %%f in (bands.c celt.c cwrs.c entcode.c entdec.c entenc.c header.c kiss_fft.c laplace.c mathops.c mdct.c modes.c pitch.c plc.c quant_bands.c rate.c static_modes_fixed.c static_modes_float.c vq.c) do (
-            cl /c /O2 /MT /DHAVE_CONFIG_H /DCELT_BUILD /Isrc /Iinclude /Fo:obj\%%~nf.obj src\%%f
+            cl /c /O2 /MT /DHAVE_CONFIG_H /Isrc /Iinclude /Fo:obj\%%~nf.obj src\%%f
             if errorlevel 1 exit /b 1
           )
 
