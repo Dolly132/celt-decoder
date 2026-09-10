@@ -2,6 +2,7 @@
 OS ?= windows
 ARCH ?= x86
 
+# Source files
 SRCS = src/bands.c src/celt.c src/cwrs.c src/entcode.c \
        src/entdec.c src/entenc.c src/header.c src/kiss_fft.c \
        src/laplace.c src/mathops.c src/mdct.c src/modes.c \
@@ -10,6 +11,7 @@ SRCS = src/bands.c src/celt.c src/cwrs.c src/entcode.c \
 
 OBJS = $(SRCS:.c=.o)
 
+# Toolchain and Target setup based on OS & ARCH
 ifeq ($(OS), windows)
     ifeq ($(ARCH), x64)
         CC = x86_64-w64-mingw32-gcc
@@ -36,9 +38,12 @@ else ifeq ($(OS), linux)
     endif
 endif
 
-# -mno-stack-arg-probe disables MinGW's ___chkstk_ms calls for MSVC compatibility
+# CFLAGS Breakdown:
+# -mno-stack-arg-probe : Prevents GCC from calling missing ___chkstk_ms in MSVC
+# -mstackrealign       : Forces 16-byte stack realignment to prevent SSE/SIMD crashes
+# -fno-stack-protector : Removes GCC stack canary dependencies
 CFLAGS = $(CFLAGS_ARCH) -DHAVE_CONFIG_H -Iinclude -Isrc \
-         -mno-stack-arg-probe -fno-stack-protector \
+         -mno-stack-arg-probe -mstackrealign -fno-stack-protector \
          -Wno-parentheses -Wno-tautological-pointer-compare \
          -Wno-implicit-function-declaration -std=gnu89
 
@@ -50,5 +55,6 @@ all: $(TARGET)
 $(TARGET): $(OBJS)
 	$(AR) rcs $@ $(OBJS)
 
+# Cleans only object files so multiple builds can be run sequentially in CI
 clean:
 	rm -f $(OBJS)
