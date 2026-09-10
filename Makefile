@@ -1,41 +1,32 @@
-# Default to 64-bit MinGW compiler (matches your MSVC x64 build)
-# Change to i686-w64-mingw32-gcc if you are building an x86/32-bit extension
-CC ?= x86_64-w64-mingw32-gcc
+# Target 32-bit MinGW cross-compiler
+CC = i686-w64-mingw32-gcc
+AR = i686-w64-mingw32-ar
 
-# Source files inside src/
-CELT_SRCS = src/bands.c src/celt.c src/cwrs.c src/entcode.c \
-            src/entdec.c src/entenc.c src/header.c src/kiss_fft.c \
-            src/laplace.c src/mathops.c src/mdct.c src/modes.c \
-            src/pitch.c src/plc.c src/quant_bands.c src/rate.c \
-            src/vq.c
+# Source files (all inside src/)
+SRCS = src/bands.c src/celt.c src/cwrs.c src/entcode.c \
+       src/entdec.c src/entenc.c src/header.c src/kiss_fft.c \
+       src/laplace.c src/mathops.c src/mdct.c src/modes.c \
+       src/pitch.c src/plc.c src/quant_bands.c src/rate.c \
+       src/vq.c
 
-# Headers for change tracking
-CELT_HDRS = $(wildcard include/*.h) $(wildcard src/*.h)
+# Object files
+OBJS = $(SRCS:.c=.o)
 
-# Compiler flags for Windows & legacy C support
-CFLAGS = -DHAVE_CONFIG_H -Iinclude -Isrc \
+# Compiler flags targeting 32-bit Windows & legacy C
+CFLAGS = -m32 -DHAVE_CONFIG_H -Iinclude -Isrc \
          -Wno-parentheses -Wno-tautological-pointer-compare \
          -Wno-implicit-function-declaration -std=gnu89
 
-# Output targets: DLL + Import Library for MSVC
-TARGET_DLL = celt32.dll
-TARGET_LIB = libcelt32.lib
+# Output static library target
+TARGET = celt32.lib
 
-all: $(TARGET_DLL)
+all: $(TARGET)
 
-$(TARGET_DLL): config.h $(CELT_SRCS) $(CELT_HDRS)
-	$(CC) $(CFLAGS) -shared $(CELT_SRCS) \
-		-Wl,--out-implib,$(TARGET_LIB) \
-		-o $@
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
-# Generate a minimal config.h if missing
-config.h:
-	@echo "Creating static config.h for Windows..."
-	@echo "#ifndef CONFIG_H" > config.h
-	@echo "#define CONFIG_H" >> config.h
-	@echo "#define inline __inline" >> config.h
-	@echo "#define USE_ALLOCA 1" >> config.h
-	@echo "#endif" >> config.h
+$(TARGET): $(OBJS)
+	$(AR) rcs $@ $(OBJS)
 
 clean:
-	rm -f $(TARGET_DLL) $(TARGET_LIB) config.h
+	rm -f $(OBJS) $(TARGET)
